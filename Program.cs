@@ -10,17 +10,19 @@ namespace DriveChecker
     {
         static void Main(string[] args)
         {
-            
+            // open xml-document: config.xml
             XmlDocument config = new XmlDocument();
             config.Load(@"C:\Inst\Config.xml");
 
-            CultureInfo culture = new System.Globalization.CultureInfo("de-DE");
+            // create weekday with german cultureinfo
+            CultureInfo culture = new CultureInfo("de-DE");
             String weekday = culture.DateTimeFormat.GetDayName(DateTime.Today.DayOfWeek);
 
+            // read weekday node and drivename
             XmlNode XML_Drive = config.SelectSingleNode("/days/day[@name='" + weekday + "']/@drive");
             String driveName = XML_Drive.Value + ":\\";
 
-            // Validate command line parameters
+            // validate parameter - driveName
             if (driveName == String.Empty)
             {
                 Console.WriteLine("Kein Laufwerksbuchstabe in der Config.xml gegeben");
@@ -33,6 +35,7 @@ namespace DriveChecker
             {
                 String driveInfo = driveName;
 
+                // if - driveName is there and drive is ready
                 if (driveInfo == drive.Name && drive.IsReady)
                 {
                     isDrivePresent = true;
@@ -47,13 +50,14 @@ namespace DriveChecker
             string message = isDrivePresent ? $"Laufwerk {driveName} ist verfügbar. " : $"Laufwerk {driveName} ist nicht verfügbar.";
             EventLogEntryType type = isDrivePresent ? EventLogEntryType.Information : EventLogEntryType.Error;
 
+            // create eventlog-source if it doesn't exist
             if (!EventLog.SourceExists(source))
             {
                 EventLog.CreateEventSource(source, target);
             }
             
+            // write eventlog message and write to console
             EventLog.WriteEntry(source, message, type, eventId);
-
             Console.WriteLine(message);
         }
     }
